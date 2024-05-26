@@ -5,29 +5,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentDatetimeDiv = document.getElementById('current-datetime');
     const monthYearDiv = document.getElementById('month-year');
 
-    // Pad single digits with zero for date formatting
-    function padZero(num) {
-        return num.toString().padStart(2, '0');
+    // Updating the current date and time
+    function updateCurrentDatetime() {
+        const now = new Date();
+        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+        currentDatetimeDiv.innerHTML = now.toLocaleDateString('en-US', options);
     }
 
-    // Fetch holiday data from the API
-    async function fetchHolidays(year, countryCode) {
-        const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`);
-        const data = await response.json();
-        return data;
-    }
+    setInterval(updateCurrentDatetime, 1000);
 
-    // Update calendar with fetched holidays data
-    async function updateCalendarWithHolidays(holidays) {
-        const monthYearText = monthYearDiv.textContent;
-        const [monthName, year] = monthYearText.split(' ');
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const monthName = monthInput.value.trim();
+        if (monthName) {
+            const date = new Date();
+            const year = date.getFullYear();
+            const monthIndex = new Date(Date.parse(monthName + " 1, " + year)).getMonth();
+            if (!isNaN(monthIndex)) {
+                showCalendar(monthIndex, year);
+                monthYearDiv.innerHTML = `${capitalizeFirstLetter(monthName)} ${year}`;
+            } else {
+                monthYearDiv.innerHTML = "Invalid month name.";
+                calendarDiv.innerHTML = "";
+            }
+        }
+    });
 
-        // Convert month name to month index
-        const monthIndex = new Date(Date.parse(`${monthName} 1, ${year}`)).getMonth();
-
-        // Fill the calendar with holidays based on fetched data
-        const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-        const firstDay = new Date(year, monthIndex).getDay();
+    function showCalendar(month, year) {
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstDay = new Date(year, month).getDay();
         let table = `<table>
             <tr>
                 <th>Sun</th>
@@ -51,10 +57,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 table += "</tr><tr>";
             }
             // Check if the day is a holiday
-            const holiday = holidays.find(h => h.date === `${year}-${padZero(monthIndex + 1)}-${padZero(day)}`);
-            // Add the day number with red color and holidays in a tooltip
+            const holidayName = checkHoliday(month, day);
             table += `<td class="day-cell">
-                        <span class="${holiday ? 'holiday' : ''}" data-holiday="${holiday ? holiday.localName : ''}">${day}</span>
+                        <span class="${holidayName ? 'holiday' : ''}" data-holiday="${holidayName ? holidayName : ''}">${day}</span>
                       </td>`;
         }
 
@@ -62,42 +67,22 @@ document.addEventListener('DOMContentLoaded', () => {
         calendarDiv.innerHTML = table;
     }
 
-    // Updating the current date and time
-    async function updateCurrentDatetime() {
-        const now = new Date();
-        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
-        currentDatetimeDiv.innerHTML = now.toLocaleDateString('en-US', options);
+    // Check if a specific day is a holiday
+    function checkHoliday(month, day) {
+        const holidays = {
+            '0-1': "New Year's Day",
+            '1-14': "Valentine's Day",
+            '4-1': "International Workers' Day",
+            '11-25': "Christmas Day",
+        };
 
-        // Fetch holidays for the current year and country (e.g., Austria - AT)
-        const holidays = await fetchHolidays(now.getFullYear(), 'AT');
-        // Update the calendar with fetched holidays
-        updateCalendarWithHolidays(holidays);
+        const key = `${month}-${day}`;
+        return holidays[key] || null;
     }
 
-    setInterval(updateCurrentDatetime, 1000);
-
-    form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const monthName = monthInput.value.trim();
-        if (monthName) {
-            const date = new Date();
-            const year = date.getFullYear();
-            const monthIndex = new Date(Date.parse(monthName + " 1, " + year)).getMonth();
-            if (!isNaN(monthIndex)) {
-                updateCalendarWithHolidays([]);
-                monthYearDiv.innerHTML = `${capitalizeFirstLetter(monthName)} ${year}`;
-            } else {
-                monthYearDiv.innerHTML = "Invalid month name.";
-                calendarDiv.innerHTML = "";
-            }
-        }
-    });
-
-    // Function to capitalize the first letter of a month name
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
     }
 
-    // Initialize the current date and time display
     updateCurrentDatetime();
 });
