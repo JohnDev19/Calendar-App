@@ -2,8 +2,8 @@
 
 This is a simple calendar app built using HTML, CSS, and JavaScript.
 
-![Alt text](URL or relative path to the image)
-
+![Weather App](![Weather App](images/weather-app.png)
+)
 
 ## Features
 
