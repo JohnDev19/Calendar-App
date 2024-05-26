@@ -2,7 +2,8 @@
 
 This is a simple calendar app built using HTML, CSS, and JavaScript.
 
-![Weather App](Screenshot 2024-05-25 230519.png)
+![Screenshot](https://github.com/JohnDev19/Calendar-App/blob/main/Screenshot%202024-05-25%20230519.png)
+
 
 ## Features
 
